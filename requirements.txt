@@ -1,0 +1,28 @@
+# Web Framework
+fastapi
+uvicorn[standard]
+pydantic
+python-multipart
+
+# Deep Learning (CPU Version - much smaller!)
+# --extra-index-url https://download.pytorch.org/whl/cpu
+torch
+transformers
+
+# OpenAI API
+openai
+
+# Data Processing
+numpy
+pandas
+
+# Vector Search (CPU Version)
+faiss-cpu
+sentence-transformers
+
+# Chinese Processing
+jieba
+
+# Utilities
+requests
+python-dotenv

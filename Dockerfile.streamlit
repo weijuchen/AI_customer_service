@@ -1,0 +1,40 @@
+FROM python:3.9-slim
+
+WORKDIR /app
+
+# ⭐ Only use the official PyPI source; no mirror sources are set
+
+# Install Streamlit and required dependencies
+RUN pip install --no-cache-dir \
+    streamlit==1.29.0 \
+    requests==2.31.0 \
+    plotly==5.18.0 \
+    pandas==2.0.3
+
+# Copy application file
+COPY streamlit_app.py .
+
+# Create Streamlit configuration directory
+RUN mkdir -p ~/.streamlit
+
+# Configure Streamlit for container operation
+RUN echo "\
+[general]\n\
+email = \"\"\n\
+\n\
+[server]\n\
+headless = true\n\
+enableCORS = false\n\
+port = 8501\n\
+address = \"0.0.0.0\"\n\
+" > ~/.streamlit/config.toml
+
+# Expose port
+EXPOSE 8501
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:8501/_stcore/health || exit 1
+
+# Start command
+CMD ["streamlit", "run", "streamlit_app.py", "--server.port=8501", "--server.address=0.0.0.0"]

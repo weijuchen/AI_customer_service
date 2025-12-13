@@ -96,6 +96,47 @@ def get_fallback_answer(user_input: str) -> str:
         return "感謝您的提問！由於目前系統負載較高，我暫時無法提供詳細回答。\n\n您可以：\n1. 📧 發送郵件至：service@example.com\n2. 📞 撥打客服專線：0800-123-456\n3. 💬 稍後再試使用線上客服\n\n我們會盡快為您解答！"
 
 
+def is_fallback_sufficient(user_input: str) -> bool:
+    """
+    判斷規則匹配是否足以回答問題
+    Returns: True 表示規則可以回答，False 表示需要 OpenAI
+    """
+    user_input_lower = user_input.lower()
+
+    # 定義可以用規則回答的關鍵詞
+    simple_keywords = [
+        # 訂單相關
+        ["訂單", "出貨", "配送", "物流", "運送"],
+        # 退換貨相關
+        ["退貨", "退款", "換貨", "退換", "瑕疵"],
+        # 產品相關
+        ["產品", "商品", "功能", "規格", "尺寸"],
+        # 付款相關
+        ["付款", "支付", "刷卡", "轉帳", "金流"],
+        # 優惠相關
+        ["優惠", "折扣", "活動", "促銷", "特價"],
+        # 會員相關
+        ["會員", "註冊", "登入", "帳號", "密碼"],
+        # 聯繫相關
+        ["客服", "聯繫", "電話", "信箱", "地址", "營業時間"],
+    ]
+
+    # 檢查是否匹配任何關鍵詞組
+    for keyword_group in simple_keywords:
+        if any(keyword in user_input for keyword in keyword_group):
+            # 如果問題很短且包含關鍵詞，規則可以回答
+            if len(user_input) < 50:
+                return True
+            # 如果問題較長但只包含一個關鍵詞組，規則也可以回答
+            matched_groups = sum(
+                1 for group in simple_keywords if any(kw in user_input for kw in group)
+            )
+            if matched_groups == 1:
+                return True
+
+    return False
+
+
 # Custom CSS for chat interface
 st.markdown(
     """
@@ -224,143 +265,209 @@ if user_input:
         st.write(user_input)
         st.caption(timestamp)
 
-    # Call API to get response
+    # 優先使用規則匹配
     with st.chat_message("assistant"):
-        with st.spinner("正在思考中..."):
-            try:
-                # Call the chat API
-                response = requests.post(
-                    f"{API_URL}/chat", json={"text": user_input}, timeout=30
+        # 先檢查規則匹配是否足夠
+        if is_fallback_sufficient(user_input):
+            # 使用規則匹配（免費、快速）
+            with st.spinner("正在查詢..."):
+                fallback_answer = get_fallback_answer(user_input)
+
+                # 顯示回答
+                st.write(fallback_answer)
+                st.info("💡 此回答由規則匹配提供（快速模式）")
+                st.caption(datetime.now().strftime("%H:%M:%S"))
+
+                # 嘗試獲取情緒和意圖（調用後端 API，但不調用 OpenAI）
+                try:
+                    response = requests.post(
+                        f"{API_URL}/analyze", json={"text": user_input}, timeout=10
+                    )
+                    if response.status_code == 200:
+                        result = response.json()
+                        emotion = result.get("emotion", {}).get("emotion", "中性")
+                        intent = result.get("intent", {}).get("intent", "一般詢問")
+                    else:
+                        emotion = "中性"
+                        intent = "一般詢問"
+                except:
+                    emotion = "中性"
+                    intent = "一般詢問"
+
+                # 保存到反饋數據庫
+                if feedback_db:
+                    try:
+                        if "session_id" not in st.session_state:
+                            st.session_state.session_id = (
+                                f"session_{datetime.now().strftime('%Y%m%d%H%M%S')}"
+                            )
+                        feedback_db.add_feedback(
+                            user_message=user_input,
+                            emotion=emotion,
+                            emotion_confidence=0.7,
+                            intent=intent,
+                            session_id=st.session_state.session_id,
+                        )
+                    except:
+                        pass
+
+                # 添加到聊天記錄
+                st.session_state.messages.append(
+                    {
+                        "role": "user",
+                        "content": user_input,
+                        "emotion": emotion,
+                        "intent": intent,
+                        "timestamp": timestamp,
+                    }
+                )
+                st.session_state.messages.append(
+                    {
+                        "role": "assistant",
+                        "content": fallback_answer,
+                        "timestamp": datetime.now().strftime("%H:%M:%S"),
+                        "fallback": True,
+                    }
                 )
 
-                if response.status_code == 200:
-                    result = response.json()
+                st.rerun()
 
-                    # Extract information
-                    answer = result.get("answer", "抱歉，我無法回答這個問題。")
-                    emotion = result.get("emotion", {}).get("emotion", "未知")
-                    intent = result.get("intent", {}).get("intent", "未知")
-
-                    # Display answer
-                    st.write(answer)
-
-                    # Display metadata in expander
-                    with st.expander("📊 查看分析詳情"):
-                        col1, col2 = st.columns(2)
-                        with col1:
-                            st.metric("情緒", emotion)
-                        with col2:
-                            st.metric("意圖", intent)
-
-                        if "retrieved_faqs" in result and result["retrieved_faqs"]:
-                            st.markdown("**參考來源：**")
-                            for i, faq in enumerate(result["retrieved_faqs"], 1):
-                                st.markdown(f"{i}. {faq.get('question', 'N/A')}")
-
-                    st.caption(datetime.now().strftime("%H:%M:%S"))
-
-                    # Save to feedback database
-                    if feedback_db:
-                        try:
-                            # Get or create session ID
-                            if "session_id" not in st.session_state:
-                                st.session_state.session_id = (
-                                    f"session_{datetime.now().strftime('%Y%m%d%H%M%S')}"
-                                )
-
-                            feedback_db.add_feedback(
-                                user_message=user_input,
-                                emotion=emotion,
-                                emotion_confidence=result.get("emotion", {}).get(
-                                    "confidence", 0
-                                ),
-                                intent=intent,
-                                session_id=st.session_state.session_id,
-                            )
-                        except Exception as e:
-                            # 靜默失敗，不影響用戶體驗
-                            pass
-
-                    # Add messages to session state
-                    st.session_state.messages.append(
-                        {
-                            "role": "user",
-                            "content": user_input,
-                            "emotion": emotion,
-                            "intent": intent,
-                            "timestamp": timestamp,
-                        }
+        else:
+            # 規則無法回答，使用 OpenAI API（付費）
+            with st.spinner("正在思考中...（使用 AI 模式）"):
+                try:
+                    # Call the chat API
+                    response = requests.post(
+                        f"{API_URL}/chat", json={"text": user_input}, timeout=30
                     )
 
-                    st.session_state.messages.append(
-                        {
-                            "role": "assistant",
-                            "content": answer,
-                            "timestamp": datetime.now().strftime("%H:%M:%S"),
-                        }
-                    )
+                    if response.status_code == 200:
+                        result = response.json()
 
-                    # Rerun to update chat display
-                    st.rerun()
+                        # Extract information
+                        answer = result.get("answer", "抱歉，我無法回答這個問題。")
+                        emotion = result.get("emotion", {}).get("emotion", "未知")
+                        intent = result.get("intent", {}).get("intent", "未知")
 
-                else:
-                    error_msg = ""
-                    try:
-                        error_data = response.json()
-                        if "error" in error_data:
-                            error_msg = error_data["error"]
-                    except:
-                        error_msg = response.text
+                        # Display answer
+                        st.write(answer)
+                        st.success("🤖 此回答由 AI 智能生成")
 
-                    # 檢查是否是 OpenAI API 配額問題
-                    if response.status_code == 429 or "insufficient_quota" in str(
-                        error_msg
-                    ):
-                        st.error("⚠️ OpenAI API 配額已用完")
-                        st.warning(
-                            "**解決方案：**\n\n"
-                            "1. 前往 [OpenAI 帳戶](https://platform.openai.com/account/billing) 充值\n"
-                            "2. 或暫時使用規則匹配模式（準確率較低）\n\n"
-                            "**目前系統使用規則匹配為您提供基本回答：**"
-                        )
+                        # Display metadata in expander
+                        with st.expander("📊 查看分析詳情"):
+                            col1, col2 = st.columns(2)
+                            with col1:
+                                st.metric("情緒", emotion)
+                            with col2:
+                                st.metric("意圖", intent)
 
-                        # 使用簡單的規則匹配作為備用
-                        fallback_answer = get_fallback_answer(user_input)
-                        st.write(fallback_answer)
+                            if "retrieved_faqs" in result and result["retrieved_faqs"]:
+                                st.markdown("**參考來源：**")
+                                for i, faq in enumerate(result["retrieved_faqs"], 1):
+                                    st.markdown(f"{i}. {faq.get('question', 'N/A')}")
+
                         st.caption(datetime.now().strftime("%H:%M:%S"))
 
-                        # 添加到聊天記錄
+                        # Save to feedback database
+                        if feedback_db:
+                            try:
+                                # Get or create session ID
+                                if "session_id" not in st.session_state:
+                                    st.session_state.session_id = f"session_{datetime.now().strftime('%Y%m%d%H%M%S')}"
+
+                                feedback_db.add_feedback(
+                                    user_message=user_input,
+                                    emotion=emotion,
+                                    emotion_confidence=result.get("emotion", {}).get(
+                                        "confidence", 0
+                                    ),
+                                    intent=intent,
+                                    session_id=st.session_state.session_id,
+                                )
+                            except Exception as e:
+                                # 靜默失敗，不影響用戶體驗
+                                pass
+
+                        # Add messages to session state
                         st.session_state.messages.append(
                             {
                                 "role": "user",
                                 "content": user_input,
-                                "emotion": "未知",
-                                "intent": "未知",
+                                "emotion": emotion,
+                                "intent": intent,
                                 "timestamp": timestamp,
                             }
                         )
+
                         st.session_state.messages.append(
                             {
                                 "role": "assistant",
-                                "content": fallback_answer,
+                                "content": answer,
                                 "timestamp": datetime.now().strftime("%H:%M:%S"),
-                                "fallback": True,
                             }
                         )
-                        st.rerun()
-                    else:
-                        st.error(f"❌ API 錯誤: {response.status_code}")
-                        st.write("抱歉，系統暫時無法回應，請稍後再試。")
-                        if error_msg:
-                            with st.expander("查看錯誤詳情"):
-                                st.code(error_msg)
 
-            except requests.exceptions.Timeout:
-                st.error("⏰ 請求超時，請稍後再試")
-            except requests.exceptions.ConnectionError:
-                st.error("❌ 無法連接到 API 服務，請確認服務是否運行")
-            except Exception as e:
-                st.error(f"❌ 發生錯誤: {str(e)}")
+                        # Rerun to update chat display
+                        st.rerun()
+
+                    else:
+                        error_msg = ""
+                        try:
+                            error_data = response.json()
+                            if "error" in error_data:
+                                error_msg = error_data["error"]
+                        except:
+                            error_msg = response.text
+
+                        # 檢查是否是 OpenAI API 配額問題
+                        if response.status_code == 429 or "insufficient_quota" in str(
+                            error_msg
+                        ):
+                            st.error("⚠️ OpenAI API 配額已用完")
+                            st.warning(
+                                "**解決方案：**\n\n"
+                                "1. 前往 [OpenAI 帳戶](https://platform.openai.com/account/billing) 充值\n"
+                                "2. 或暫時使用規則匹配模式\n\n"
+                                "**目前系統使用規則匹配為您提供基本回答：**"
+                            )
+
+                            # 使用簡單的規則匹配作為備用
+                            fallback_answer = get_fallback_answer(user_input)
+                            st.write(fallback_answer)
+                            st.caption(datetime.now().strftime("%H:%M:%S"))
+
+                            # 添加到聊天記錄
+                            st.session_state.messages.append(
+                                {
+                                    "role": "user",
+                                    "content": user_input,
+                                    "emotion": "未知",
+                                    "intent": "未知",
+                                    "timestamp": timestamp,
+                                }
+                            )
+                            st.session_state.messages.append(
+                                {
+                                    "role": "assistant",
+                                    "content": fallback_answer,
+                                    "timestamp": datetime.now().strftime("%H:%M:%S"),
+                                    "fallback": True,
+                                }
+                            )
+                            st.rerun()
+                        else:
+                            st.error(f"❌ API 錯誤: {response.status_code}")
+                            st.write("抱歉，系統暫時無法回應，請稍後再試。")
+                            if error_msg:
+                                with st.expander("查看錯誤詳情"):
+                                    st.code(error_msg)
+
+                except requests.exceptions.Timeout:
+                    st.error("⏰ 請求超時，請稍後再試")
+                except requests.exceptions.ConnectionError:
+                    st.error("❌ 無法連接到 API 服務，請確認服務是否運行")
+                except Exception as e:
+                    st.error(f"❌ 發生錯誤: {str(e)}")
 
 # Sidebar
 with st.sidebar:

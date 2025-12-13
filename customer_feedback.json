@@ -271,5 +271,18 @@
     "session_id": "session_20251210165429",
     "is_negative": true,
     "needs_attention": false
+  },
+  {
+    "id": 22,
+    "timestamp": "2025-12-13 15:40:06",
+    "date": "2025-12-13",
+    "time": "15:40:06",
+    "user_message": "你們的營業時間是什麼時候？",
+    "emotion": "負面",
+    "emotion_confidence": 0.3723211884498596,
+    "intent": "其他",
+    "session_id": "session_20251213154006",
+    "is_negative": true,
+    "needs_attention": false
   }
 ]

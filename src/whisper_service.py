@@ -8,8 +8,25 @@ class WhisperService:
     """Speech-to-Text Transcription Service"""
 
     def __init__(self):
-        # Initializes the OpenAI client using the API key from environment variables
-        self.client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+        # Lazy loading: 只在第一次使用時才初始化 OpenAI client
+        self.client = None
+        self._initialized = False
+        print(f"✓ Whisper Service 初始化完成（延遲載入模式）")
+    
+    def _lazy_init(self):
+        """延遲初始化：只在第一次使用時才載入 OpenAI client"""
+        if self._initialized:
+            return
+        
+        print(f"首次使用語音識別，正在初始化 Whisper Service...")
+        try:
+            # Initializes the OpenAI client using the API key from environment variables
+            self.client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+            self._initialized = True
+            print(f"✓ Whisper Service 載入完成！")
+        except Exception as e:
+            print(f"✗ 無法初始化 Whisper Service: {e}")
+            self._initialized = True  # 標記為已初始化，避免重複嘗試
 
     def transcribe(self, audio_file_path: str) -> Dict[str, str]:
         """

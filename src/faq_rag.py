@@ -23,23 +23,40 @@ load_dotenv(dotenv_path, override=True)
 class RAGSystem:
     """Simplified RAG System: FAQ Retrieval + LLM Generation"""
 
-    def __init__(self, faq_path: str = "/app/faq_data/faq.json"):
+    def __init__(self, faq_path: str = None):
         """
         Initializes the RAG System
 
         Args:
-            faq_path: Path to the FAQ knowledge base (absolute path for container environment).
+            faq_path: Path to the FAQ knowledge base. If None, will try multiple paths.
         """
-        # Load FAQs
-        try:
-            with open(faq_path, "r", encoding="utf-8") as f:
-                self.faqs = json.load(f)
-        except FileNotFoundError:
-            print(f"Error: FAQ file not found at {faq_path}")
-            self.faqs = []
-        except json.JSONDecodeError:
-            print(f"Error: Failed to decode JSON from {faq_path}")
-            self.faqs = []
+        # Load FAQs - try multiple paths
+        if faq_path is None:
+            faq_paths = [
+                "/app/faq_data/faq.json",     # Docker path
+                "../faq_data/faq.json",        # Local path from src/
+                "faq_data/faq.json",           # Local path from root
+            ]
+        else:
+            faq_paths = [faq_path]
+        
+        self.faqs = []
+        for path in faq_paths:
+            try:
+                if os.path.exists(path):
+                    with open(path, "r", encoding="utf-8") as f:
+                        self.faqs = json.load(f)
+                    print(f"✓ FAQ loaded successfully from {path}")
+                    break
+            except FileNotFoundError:
+                continue
+            except json.JSONDecodeError:
+                print(f"Error: Failed to decode JSON from {path}")
+                continue
+        
+        if not self.faqs:
+            print(f"Warning: No FAQ file found in any of: {faq_paths}")
+            print("RAG system will work with empty FAQ database.")
 
         # Initialize Sentence Transformer (for semantic retrieval)
         print("Loading Sentence Transformer model...")

@@ -1,16 +1,15 @@
 """
-AI Customer Service Smart Analysis System - Streamlit Frontend Interface
+AI Customer Service Smart Analysis System - Main Entry Page
+主入口頁面
 """
 
 import streamlit as st
 import requests
-import json
 import os
-from datetime import datetime
 
 # Page configuration
 st.set_page_config(
-    page_title="AI Customer Service Analysis System",
+    page_title="AI 客服智能分析系統",
     page_icon="🤖",
     layout="wide",
     initial_sidebar_state="expanded",
@@ -23,475 +22,561 @@ API_URL = os.getenv("API_URL", "http://localhost:8000")
 st.markdown(
     """
 <style>
+    /* 主標題樣式 */
     .main-header {
-        font-size: 2.5rem;
+        font-size: 3rem;
         font-weight: bold;
-        color: #1f77b4;
-        text-align: center;
-        padding: 1rem 0;
-    }
-    .metric-card {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        padding: 1.5rem;
-        border-radius: 10px;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        text-align: center;
+        padding: 2rem 0 1rem 0;
+        margin-bottom: 0;
+    }
+    
+    .subtitle {
+        text-align: center;
+        color: #666;
+        font-size: 1.2rem;
+        margin-bottom: 2rem;
+    }
+    
+    /* Hero Section */
+    .hero-section {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 3rem 2rem;
+        border-radius: 20px;
         color: white;
         text-align: center;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        margin-bottom: 3rem;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
+    
+    .hero-title {
+        font-size: 2.5rem;
+        font-weight: bold;
+        margin-bottom: 1rem;
+    }
+    
+    .hero-description {
+        font-size: 1.2rem;
+        opacity: 0.9;
+        line-height: 1.8;
+    }
+    
+    /* 功能卡片 */
+    .feature-card {
+        background: white;
+        padding: 2rem;
+        border-radius: 15px;
+        text-align: center;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        margin: 1rem 0;
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+        height: 100%;
+    }
+    
+    .feature-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        border-color: #667eea;
+    }
+    
+    .feature-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+    }
+    
+    .feature-title {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 0.5rem;
+    }
+    
+    .feature-description {
+        color: #666;
+        line-height: 1.6;
+        margin-bottom: 1rem;
+    }
+    
+    /* 統計數字 */
+    .stats-container {
+        display: flex;
+        justify-content: space-around;
+        margin: 2rem 0;
+        padding: 2rem;
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        border-radius: 15px;
+    }
+    
+    .stat-item {
+        text-align: center;
+    }
+    
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: #667eea;
+    }
+    
+    .stat-label {
+        color: #666;
+        font-size: 1rem;
+    }
+    
+    /* 技術標籤 */
+    .tech-badge {
+        display: inline-block;
+        padding: 0.5rem 1rem;
+        margin: 0.3rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+    
+    /* 分隔線 */
+    .section-divider {
+        height: 3px;
+        background: linear-gradient(90deg, transparent, #667eea, transparent);
+        margin: 3rem 0;
+    }
+    
+    /* Footer */
+    .footer {
+        text-align: center;
+        color: #666;
+        padding: 2rem;
+        margin-top: 3rem;
+        border-top: 2px solid #eee;
     }
 </style>
 """,
     unsafe_allow_html=True,
 )
 
-# Main title
-st.markdown(
-    '<h1 class="main-header">🤖 AI Customer Service Smart Analysis System</h1>',
-    unsafe_allow_html=True,
-)
-
-# Sidebar
+# Sidebar - 自定義導航（保持不變）
 with st.sidebar:
-    st.markdown("### 📊 System Features")
-    page = st.radio(
-        "Select Function Module:",
-        ["🏠 Home", "😊 Emotion Analysis", "🤖 Smart Q&A", "📈 System Monitor"],
-    )
+    st.markdown("### 📊 導航選單")
+
+    # 使用者功能區
+    st.markdown("#### 👥 使用者功能")
+    if st.button("🏠 首頁", use_container_width=True, key="nav_home"):
+        st.switch_page("streamlit_app.py")
+    if st.button("💬 聊天助理", use_container_width=True, key="nav_chat"):
+        st.switch_page("pages/1_💬_Chat.py")
 
     st.markdown("---")
-    st.markdown("### ⚙️ System Status")
+
+    # 公司後台區
+    st.markdown("#### 🔐 公司後台")
+    if st.button("🔒 情緒分析", use_container_width=True, key="nav_emotion"):
+        st.switch_page("pages/2_🔒_Emotion.py")
+    if st.button("🔒 意圖識別", use_container_width=True, key="nav_intent"):
+        st.switch_page("pages/3_🔒_Intent.py")
+    if st.button("🔒 系統監控", use_container_width=True, key="nav_monitoring"):
+        st.switch_page("pages/4_🔒_Monitoring.py")
+
+    st.markdown("---")
+    st.markdown("### ⚙️ 系統狀態")
 
     # Check API health status
     try:
         response = requests.get(f"{API_URL}/", timeout=3)
         if response.status_code == 200:
-            st.success("✅ API Service is Running")
-            health_data = response.json()
-            with st.expander("View Details"):
-                st.json(health_data)
+            st.success("✅ API 服務運行中")
         else:
-            st.error("❌ API Service is Abnormal")
+            st.error("❌ API 服務異常")
     except Exception as e:
-        st.error(f"❌ Cannot connect to API\n{str(e)}")
+        st.error(f"❌ 無法連接 API")
 
     st.markdown("---")
-    st.markdown("### 📝 Technology Stack")
+    st.markdown("### 📝 技術棧")
     st.info(
         """
-    **Deep Learning**
+    **深度學習**
     - PyTorch (TextCNN)
-    - BERT (Intent Recognition)
+    - BERT (意圖識別)
     
-    **Backend**
+    **後端**
     - FastAPI
     - OpenAI API
-    
-    **Deployment**
-    - Docker
-    - Docker Compose
     """
     )
 
-# ==================== Home Page ====================
-if page == "🏠 Home":
-    st.markdown("## Welcome to the AI Customer Service Smart Analysis System")
+# ==================== 首頁內容 ====================
 
-    # Feature cards
-    col1, col2, col3 = st.columns(3)
+# Main Header
+st.markdown(
+    '<h1 class="main-header">🤖 AI 客服智能分析系統</h1>',
+    unsafe_allow_html=True,
+)
+st.markdown(
+    '<p class="subtitle">結合深度學習與自然語言處理，提供智能化客戶服務解決方案</p>',
+    unsafe_allow_html=True,
+)
 
-    with col1:
-        st.markdown(
-            """
-        <div class="metric-card">
-            <h2>😊</h2>
-            <h3>Emotion Analysis</h3>
-            <p>TextCNN Deep Learning Model</p>
-            <h4>Accuracy 95%+</h4>
-        </div>
-        """,
-            unsafe_allow_html=True,
-        )
-
-    with col2:
-        st.markdown(
-            """
-        <div class="metric-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
-            <h2>🎯</h2>
-            <h3>Intent Recognition</h3>
-            <p>BERT Pre-trained Model</p>
-            <h4>Multi-class Classification</h4>
-        </div>
-        """,
-            unsafe_allow_html=True,
-        )
-
-    with col3:
-        st.markdown(
-            """
-        <div class="metric-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
-            <h2>🤖</h2>
-            <h3>Smart Q&A</h3>
-            <p>RAG + LLM</p>
-            <h4>Instant Response</h4>
-        </div>
-        """,
-            unsafe_allow_html=True,
-        )
-
-    st.markdown("---")
-
-    # System Architecture
-    st.markdown("## 🏗️ System Architecture")
-    st.code(
-        """
-    ┌──────────────────────────────────────────────────────┐
-    │          Streamlit Frontend Interface (Port 8501)    │
-    └──────────────────────────────────────────────────────┘
-                              ↓ HTTP Request
-    ┌──────────────────────────────────────────────────────┐
-    │          FastAPI Backend Service (Port 8000)         │
-    │  ┌────────────────┐  ┌────────────────┐              │
-    │  │ Emotion Module │  │ Intent Module  │              │
-    │  │  (TextCNN)     │  │    (BERT)      │              │
-    │  └────────────────┘  └────────────────┘              │
-    │  ┌────────────────────────────────────┐              │
-    │  │ Smart Q&A Module (RAG + OpenAI)    │              │
-    │  └────────────────────────────────────┘              │
-    └──────────────────────────────────────────────────────┘
-                              ↓
-    ┌──────────────────────────────────────────────────────┐
-    │                Docker Container Orchestration        │
-    │         (docker-compose manages multiple containers) │
-    └──────────────────────────────────────────────────────┘
-    """,
-        language="text",
-    )
-
-    st.markdown("---")
-
-    # Quick Start
-    st.markdown("## 🚀 Quick Start")
-    st.info("👈 Please select a function from the left menu to test")
-
-    col1, col2 = st.columns(2)
-    with col1:
-        st.markdown("### 📊 Emotion Analysis")
-        st.write(
-            "Input customer feedback text, and the system will automatically analyze the emotional tendency."
-        )
-    with col2:
-        st.markdown("### 🤖 Smart Q&A")
-        st.write(
-            "Ask common questions, and the system will retrieve and generate answers from the knowledge base."
-        )
-
-# ==================== Emotion Analysis ====================
-elif page == "😊 Emotion Analysis":
-    st.markdown("## 😊 Customer Emotion Analysis")
-    st.markdown("---")
-
-    # Input area
-    col1, col2 = st.columns([2, 1])
-
-    with col1:
-        st.markdown("### 📝 Input Text")
-        user_text = st.text_area(
-            "Please enter customer feedback:",
-            height=150,
-            placeholder="e.g., The quality of your product is great, and the customer service attitude is wonderful!",
-        )
-
-    with col2:
-        st.markdown("### 💡 Example Texts")
-        st.caption("Click to use examples")
-
-        if st.button("😊 Positive Example", use_container_width=True):
-            user_text = "The product quality is excellent, the customer service attitude is great, and the logistics are fast!"
-            st.rerun()
-
-        if st.button("😐 Neutral Example", use_container_width=True):
-            user_text = "Product received, currently using, no strong feelings yet."
-            st.rerun()
-
-        if st.button("😞 Negative Example", use_container_width=True):
-            user_text = "The product quality is too poor, the customer service attitude is bad, and I waited a long time for a reply."
-            st.rerun()
-
-    st.markdown("---")
-
-    # Analysis button
-    if st.button("🔍 Start Analysis", type="primary", use_container_width=True):
-        if not user_text or len(user_text.strip()) == 0:
-            st.warning("⚠️ Please enter text first")
-        else:
-            with st.spinner("🔄 Analyzing..."):
-                try:
-                    # Call API
-                    response = requests.post(
-                        f"{API_URL}/analyze", json={"text": user_text}, timeout=10
-                    )
-
-                    if response.status_code == 200:
-                        result = response.json()
-
-                        st.success("✅ Analysis Complete!")
-                        st.markdown("---")
-
-                        # Display results
-                        st.markdown("### 📊 Analysis Results")
-
-                        # Emotion label and color configuration
-                        emotion_config = {
-                            "positive": {
-                                "emoji": "😊",
-                                "label": "Positive",
-                                "color": "#28a745",
-                            },
-                            "neutral": {
-                                "emoji": "😐",
-                                "label": "Neutral",
-                                "color": "#ffc107",
-                            },
-                            "negative": {
-                                "emoji": "😞",
-                                "label": "Negative",
-                                "color": "#dc3545",
-                            },
-                        }
-
-                        emotion = result.get("emotion", "unknown")
-                        config = emotion_config.get(
-                            emotion,
-                            {"emoji": "🤔", "label": "Unknown", "color": "#6c757d"},
-                        )
-
-                        # Main result card
-                        col1, col2, col3 = st.columns(3)
-
-                        with col1:
-                            st.markdown(
-                                f"""
-                            <div style='text-align: center; padding: 30px; 
-                                        background-color: {config['color']}; 
-                                        border-radius: 15px; color: white;'>
-                                <div style='font-size: 4rem;'>{config['emoji']}</div>
-                                <h2>{config['label']}</h2>
-                                <p style='font-size: 1.2rem;'>Emotion Category</p>
-                            </div>
-                            """,
-                                unsafe_allow_html=True,
-                            )
-
-                        with col2:
-                            confidence = result.get("confidence", 0)
-                            st.metric(
-                                label="Confidence",
-                                value=f"{confidence:.2%}",
-                                delta=(
-                                    "High Confidence"
-                                    if confidence > 0.8
-                                    else "Moderate Confidence"
-                                ),
-                            )
-
-                        with col3:
-                            probs = result.get("probabilities", {})
-                            sentiment_score = probs.get("positive", 0) - probs.get(
-                                "negative", 0
-                            )
-                            st.metric(
-                                label="Sentiment Score",
-                                value=f"{sentiment_score:.3f}",
-                                delta="Positive" if sentiment_score > 0 else "Negative",
-                            )
-
-                        st.markdown("---")
-
-                        # Detailed probability distribution
-                        st.markdown("#### 📈 Probability Distribution by Category")
-
-                        probs = result.get("probabilities", {})
-                        for label, prob in probs.items():
-                            col_label, col_bar = st.columns([1, 4])
-                            with col_label:
-                                st.write(f"**{label.capitalize()}**")
-                            with col_bar:
-                                st.progress(prob, text=f"{prob:.2%}")
-
-                        # Raw JSON result
-                        with st.expander("🔍 View Full JSON Result"):
-                            st.json(result)
-
-                        # Timestamp
-                        st.caption(
-                            f"Analysis Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
-                        )
-
-                    else:
-                        st.error(f"❌ API returned an error: {response.status_code}")
-                        st.code(response.text)
-
-                except requests.exceptions.Timeout:
-                    st.error("⏰ Request timed out, please try again later")
-                except requests.exceptions.ConnectionError:
-                    st.error(
-                        "❌ Cannot connect to API service, please check if the service is running"
-                    )
-                except Exception as e:
-                    st.error(f"❌ An error occurred: {str(e)}")
-
-# ==================== Smart Q&A ====================
-elif page == "🤖 Smart Q&A":
-    st.markdown("## 🤖 Smart Q&A System")
-    st.markdown("Based on RAG (Retrieval-Augmented Generation) + LLM")
-    st.markdown("---")
-
-    # Input question
-    user_question = st.text_input(
-        "Please enter your question:", placeholder="e.g., What are your business hours?"
-    )
-
-    # Quick access for common questions
-    st.markdown("### 💡 Common Questions")
-    col1, col2, col3 = st.columns(3)
-
-    with col1:
-        if st.button("⏰ Business Hours", use_container_width=True):
-            user_question = "What time are your business hours?"
-            st.rerun()
-
-    with col2:
-        if st.button("🚚 Shipping Policy", use_container_width=True):
-            user_question = "What is your shipping policy?"
-            st.rerun()
-
-    with col3:
-        if st.button("↩️ Return Policy", use_container_width=True):
-            user_question = "How do I request a return or exchange?"
-            st.rerun()
-
-    st.markdown("---")
-
-    # Submit button
-    if st.button("💬 Get Answer", type="primary", use_container_width=True):
-        if not user_question or len(user_question.strip()) == 0:
-            st.warning("⚠️ Please enter a question first")
-        else:
-            with st.spinner("🤖 AI is thinking..."):
-                try:
-                    # Call Q&A API
-                    response = requests.post(
-                        f"{API_URL}/qa", json={"question": user_question}, timeout=30
-                    )
-
-                    if response.status_code == 200:
-                        result = response.json()
-
-                        st.success("✅ Answer generation complete!")
-                        st.markdown("---")
-
-                        # Display answer
-                        st.markdown("### 💬 AI Answer")
-                        answer = result.get("answer", "Unable to generate an answer")
-                        st.markdown(
-                            f"""
-                            <div style='background-color: #f0f2f6; padding: 20px; 
-                                        border-radius: 10px; border-left: 5px solid #1f77b4;'>
-                                {answer}
-                            </div>
-                            """,
-                            unsafe_allow_html=True,
-                        )
-
-                        # Relevant sources
-                        if "sources" in result:
-                            st.markdown("---")
-                            st.markdown("### 📚 Reference Sources")
-                            for i, source in enumerate(result["sources"], 1):
-                                with st.expander(f"Source {i}"):
-                                    st.write(source)
-
-                        # Full result
-                        with st.expander("🔍 View Full Result"):
-                            st.json(result)
-
-                    else:
-                        st.error(f"❌ API returned an error: {response.status_code}")
-
-                except requests.exceptions.Timeout:
-                    st.error(
-                        "⏰ Request timed out (LLM generation can be slow), please try again later"
-                    )
-                except Exception as e:
-                    st.error(f"❌ An error occurred: {str(e)}")
-
-# ==================== System Monitor ====================
-elif page == "📈 System Monitor":
-    st.markdown("## 📈 System Monitoring Dashboard")
-    st.markdown("---")
-
-    # Refresh button
-    if st.button("🔄 Refresh Status", use_container_width=True):
-        st.rerun()
-
-    # Get health status
-    try:
-        response = requests.get(f"{API_URL}/health", timeout=5)
-        if response.status_code == 200:
-            health_data = response.json()
-
-            # System status cards
-            col1, col2, col3 = st.columns(3)
-
-            with col1:
-                st.metric("Service Status", "🟢 Running")
-
-            with col2:
-                st.metric("API Port", "8000")
-
-            with col3:
-                st.metric("Response Time", f"{response.elapsed.total_seconds():.3f}s")
-
-            st.markdown("---")
-
-            # Detailed information
-            st.markdown("### 📋 Detailed Information")
-            st.json(health_data)
-
-        else:
-            st.error("❌ Service is Abnormal")
-
-    except Exception as e:
-        st.error(f"❌ Cannot connect to service: {str(e)}")
-
-    st.markdown("---")
-
-    # Docker Information
-    st.markdown("### 🐳 Docker Deployment Information")
-    st.info(
-        """
-    **Container Services**
-    - API Container: ai-customer-service-api (Port 8000)
-    - Frontend Container: ai-customer-service-frontend (Port 8501)
-    
-    **Network**
-    - Network Name: ai-network
-    - Driver Type: bridge
-    
-    **Health Check**
-    - Interval: 30s
-    - Timeout: 10s
-    - Retries: 3
-    """
-    )
-
-# Footer
-st.markdown("---")
+# Hero Section
 st.markdown(
     """
-<div style='text-align: center; color: #666; padding: 20px;'>
-    <p>AI Customer Service Smart Analysis System | Powered by PyTorch + FastAPI + Docker</p>
-    <p>© 2025 | Day 3 Demo Project</p>
+<div class="hero-section">
+    <div class="hero-title">🚀 智能客服，即刻體驗</div>
+    <div class="hero-description">
+        運用最先進的 AI 技術，為您的客戶提供 24/7 全天候智能服務<br>
+        自動分析情緒、識別意圖、智能問答，讓客服工作更輕鬆高效
+    </div>
 </div>
 """,
     unsafe_allow_html=True,
 )
+
+# Platform Statistics
+st.markdown(
+    """
+<div class="stats-container">
+    <div class="stat-item">
+        <div class="stat-number">95%+</div>
+        <div class="stat-label">情緒識別準確率</div>
+    </div>
+    <div class="stat-item">
+        <div class="stat-number">24/7</div>
+        <div class="stat-label">全天候服務</div>
+    </div>
+    <div class="stat-item">
+        <div class="stat-number">7種</div>
+        <div class="stat-label">意圖分類</div>
+    </div>
+    <div class="stat-item">
+        <div class="stat-number">即時</div>
+        <div class="stat-label">智能回應</div>
+    </div>
+</div>
+""",
+    unsafe_allow_html=True,
+)
+
+# Section Divider
+st.markdown('<div class="section-divider"></div>', unsafe_allow_html=True)
+
+# ==================== 核心功能介紹 ====================
+st.markdown("## 🎯 核心功能")
+
+col1, col2, col3 = st.columns(3)
+
+with col1:
+    st.markdown(
+        """
+<div class="feature-card">
+    <div class="feature-icon">💬</div>
+    <div class="feature-title">智能對話</div>
+    <div class="feature-description">
+        基於 RAG 架構的智能問答系統<br>
+        結合 FAISS 向量檢索與 GPT-4o-mini<br>
+        提供準確、自然的對話體驗
+    </div>
+</div>
+""",
+        unsafe_allow_html=True,
+    )
+
+with col2:
+    st.markdown(
+        """
+<div class="feature-card">
+    <div class="feature-icon">😊</div>
+    <div class="feature-title">情緒分析</div>
+    <div class="feature-description">
+        TextCNN 深度學習模型<br>
+        自動識別客戶情緒（正面/中性/負面）<br>
+        準確率高達 95% 以上
+    </div>
+</div>
+""",
+        unsafe_allow_html=True,
+    )
+
+with col3:
+    st.markdown(
+        """
+<div class="feature-card">
+    <div class="feature-icon">🎯</div>
+    <div class="feature-title">意圖識別</div>
+    <div class="feature-description">
+        BERT 預訓練模型<br>
+        自動分類客戶問題類型<br>
+        支援 7 種意圖分類
+    </div>
+</div>
+""",
+        unsafe_allow_html=True,
+    )
+
+st.markdown("<br>", unsafe_allow_html=True)
+
+col1, col2, col3 = st.columns(3)
+
+with col1:
+    st.markdown(
+        """
+<div class="feature-card">
+    <div class="feature-icon">📊</div>
+    <div class="feature-title">數據監控</div>
+    <div class="feature-description">
+        即時監控客戶反饋<br>
+        自動識別負面情緒<br>
+        提供視覺化儀表板
+    </div>
+</div>
+""",
+        unsafe_allow_html=True,
+    )
+
+with col2:
+    st.markdown(
+        """
+<div class="feature-card">
+    <div class="feature-icon">🔍</div>
+    <div class="feature-title">智能檢索</div>
+    <div class="feature-description">
+        FAISS 向量資料庫<br>
+        快速檢索相關問答<br>
+        提高回應準確性
+    </div>
+</div>
+""",
+        unsafe_allow_html=True,
+    )
+
+with col3:
+    st.markdown(
+        """
+<div class="feature-card">
+    <div class="feature-icon">🔒</div>
+    <div class="feature-title">安全管理</div>
+    <div class="feature-description">
+        後台功能密碼保護<br>
+        數據安全加密<br>
+        權限分級管理
+    </div>
+</div>
+""",
+        unsafe_allow_html=True,
+    )
+
+# Section Divider
+st.markdown('<div class="section-divider"></div>', unsafe_allow_html=True)
+
+# ==================== 使用者功能 ====================
+# st.markdown("## 👥 使用者功能")
+# st.markdown("### 公開使用，無需密碼")
+
+# col1, col2 = st.columns(2)
+
+# with col1:
+#     st.markdown(
+#         """
+# <div class="feature-card">
+#     <div class="feature-icon">💬</div>
+#     <div class="feature-title">AI 聊天助理</div>
+#     <div class="feature-description">
+#         • 24/7 全天候智能客服<br>
+#         • 自動情緒與意圖分析<br>
+#         • 快速問題一鍵發送<br>
+#         • 對話記錄自動保存<br>
+#         • 支援規則匹配備用模式
+#     </div>
+# </div>
+# """,
+#         unsafe_allow_html=True,
+#     )
+#     if st.button(
+#         "🚀 開始對話", use_container_width=True, type="primary", key="start_chat"
+#     ):
+#         st.switch_page("pages/1_💬_Chat.py")
+
+# with col2:
+#     st.markdown(
+#         """
+# <div class="feature-card">
+#     <div class="feature-icon">📚</div>
+#     <div class="feature-title">智能知識庫</div>
+#     <div class="feature-description">
+#         • 常見問題快速查詢<br>
+#         • 向量檢索精準匹配<br>
+#         • 自動推薦相關問答<br>
+#         • 持續學習優化<br>
+#         • 多語言支援（開發中）
+#     </div>
+# </div>
+# """,
+#         unsafe_allow_html=True,
+#     )
+#     st.button("📖 瀏覽知識庫", use_container_width=True, disabled=True, key="kb")
+
+# # Section Divider
+# st.markdown('<div class="section-divider"></div>', unsafe_allow_html=True)
+
+# ==================== 後台功能 ====================
+# st.markdown("## 🔐 公司後台功能")
+# st.markdown("### 需要管理員密碼")
+
+# col1, col2, col3 = st.columns(3)
+
+# with col1:
+#     st.markdown(
+#         """
+# <div class="feature-card">
+#     <div class="feature-icon">😊</div>
+#     <div class="feature-title">客戶反饋監控</div>
+#     <div class="feature-description">
+#         • 即時情緒分析<br>
+#         • 負面反饋自動提醒<br>
+#         • 情緒趨勢圖表<br>
+#         • 需要關注客戶標記<br>
+#         • 數據匯出功能
+#     </div>
+# </div>
+# """,
+#         unsafe_allow_html=True,
+#     )
+#     if st.button("進入 →", key="emotion_btn", use_container_width=True):
+#         st.switch_page("pages/2_🔒_Emotion.py")
+
+# with col2:
+#     st.markdown(
+#         """
+# <div class="feature-card">
+#     <div class="feature-icon">🎯</div>
+#     <div class="feature-title">客戶意圖分析</div>
+#     <div class="feature-description">
+#         • 問題類型統計<br>
+#         • 意圖分布圖表<br>
+#         • 重點問題識別<br>
+#         • 趨勢分析報告<br>
+#         • 客服資源優化建議
+#     </div>
+# </div>
+# """,
+#         unsafe_allow_html=True,
+#     )
+#     if st.button("進入 →", key="intent_btn", use_container_width=True):
+#         st.switch_page("pages/3_🔒_Intent.py")
+
+# with col3:
+#     st.markdown(
+#         """
+# <div class="feature-card">
+#     <div class="feature-icon">📈</div>
+#     <div class="feature-title">系統監控</div>
+#     <div class="feature-description">
+#         • API 服務狀態<br>
+#         • 模型運行監控<br>
+#         • 性能指標追蹤<br>
+#         • 錯誤日誌記錄<br>
+#         • 系統健康檢查
+#     </div>
+# </div>
+# """,
+#         unsafe_allow_html=True,
+#     )
+#     if st.button("進入 →", key="monitoring_btn", use_container_width=True):
+#         st.switch_page("pages/4_🔒_Monitoring.py")
+
+# # Section Divider
+# st.markdown('<div class="section-divider"></div>', unsafe_allow_html=True)
+
+# ==================== 技術架構 ====================
+# st.markdown("## 🏗️ 技術架構")
+
+# col1, col2 = st.columns(2)
+
+# with col1:
+#     st.markdown("### 🎨 前端技術")
+#     st.markdown(
+#         """
+# <div style="padding: 1.5rem; background: #f8f9fa; border-radius: 10px;">
+#     <span class="tech-badge">Streamlit</span>
+#     <span class="tech-badge">Python</span>
+#     <span class="tech-badge">HTML/CSS</span>
+#     <span class="tech-badge">JavaScript</span>
+# </div>
+# """,
+#         unsafe_allow_html=True,
+#     )
+#     st.markdown("<br>", unsafe_allow_html=True)
+#     st.markdown("### 🤖 AI 模型")
+#     st.markdown(
+#         """
+# <div style="padding: 1.5rem; background: #f8f9fa; border-radius: 10px;">
+#     <span class="tech-badge">PyTorch</span>
+#     <span class="tech-badge">TextCNN</span>
+#     <span class="tech-badge">BERT</span>
+#     <span class="tech-badge">GPT-4o-mini</span>
+# </div>
+# """,
+#         unsafe_allow_html=True,
+#     )
+
+# with col2:
+#     st.markdown("### ⚙️ 後端技術")
+#     st.markdown(
+#         """
+# <div style="padding: 1.5rem; background: #f8f9fa; border-radius: 10px;">
+#     <span class="tech-badge">FastAPI</span>
+#     <span class="tech-badge">OpenAI API</span>
+#     <span class="tech-badge">FAISS</span>
+#     <span class="tech-badge">Docker</span>
+# </div>
+# """,
+#         unsafe_allow_html=True,
+#     )
+#     st.markdown("<br>", unsafe_allow_html=True)
+#     st.markdown("### 📦 部署方式")
+#     st.markdown(
+#         """
+# <div style="padding: 1.5rem; background: #f8f9fa; border-radius: 10px;">
+#     <span class="tech-badge">Docker Compose</span>
+#     <span class="tech-badge">Microservices</span>
+#     <span class="tech-badge">RESTful API</span>
+# </div>
+# """,
+#         unsafe_allow_html=True,
+#     )
+
+# # Section Divider
+# st.markdown('<div class="section-divider"></div>', unsafe_allow_html=True)
+
+# # ==================== 快速開始 ====================
+# st.markdown("## 🚀 快速開始")
+
+# col1, col2, col3 = st.columns(3)
+
+# with col1:
+#     st.markdown("### 1️⃣ 體驗聊天")
+#     st.info("點擊「開始對話」按鈕，立即與 AI 客服對話")
+
+# with col2:
+#     st.markdown("### 2️⃣ 查看分析")
+#     st.info("輸入密碼進入後台，查看客戶反饋分析")
+
+# with col3:
+#     st.markdown("### 3️⃣ 監控數據")
+#     st.info("使用儀表板即時監控客戶情緒與意圖")
+
+# # Footer
+# st.markdown(
+#     """
+# <div class="footer">
+#     <h3>🤖 AI 客服智能分析系統</h3>
+#     <p>Powered by PyTorch + BERT + FastAPI + OpenAI + Docker</p>
+#     <p>© 2025 | 使用者功能公開 | 後台功能需密碼</p>
+#     <p style="margin-top: 1rem; color: #999;">
+#         結合深度學習、自然語言處理與雲端技術，打造智能化客戶服務解決方案
+#     </p>
+# </div>
+# """,
+#     unsafe_allow_html=True,
+# )

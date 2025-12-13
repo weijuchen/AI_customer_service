@@ -68,7 +68,7 @@ try:
     for vocab_path in vocab_paths:
         if os.path.exists(vocab_path):
             with open(vocab_path, "rb") as f:
-        vocab_obj = VocabularyUnpickler(f).load()
+                vocab_obj = VocabularyUnpickler(f).load()
 
     # Ensure the correct format is retrieved
     if hasattr(vocab_obj, "word2idx"):

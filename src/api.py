@@ -68,16 +68,16 @@ try:
     for vocab_path in vocab_paths:
         if os.path.exists(vocab_path):
             with open(vocab_path, "rb") as f:
-                vocab_obj = VocabularyUnpickler(f).load()
-            
-            # Ensure the correct format is retrieved
-            if hasattr(vocab_obj, "word2idx"):
-                vocab = vocab_obj.word2idx
-            elif isinstance(vocab_obj, dict):
-                vocab = vocab_obj
-            else:
-                raise TypeError(f"Unexpected vocabulary type: {type(vocab_obj)}")
-            
+        vocab_obj = VocabularyUnpickler(f).load()
+
+    # Ensure the correct format is retrieved
+    if hasattr(vocab_obj, "word2idx"):
+        vocab = vocab_obj.word2idx
+    elif isinstance(vocab_obj, dict):
+        vocab = vocab_obj
+    else:
+        raise TypeError(f"Unexpected vocabulary type: {type(vocab_obj)}")
+
             print(f"✓ Vocabulary loaded successfully from {vocab_path}, size: {len(vocab)}")
             vocab_loaded = True
             break
@@ -119,18 +119,18 @@ try:
     for model_path in model_paths:
         if os.path.exists(model_path):
             checkpoint = torch.load(model_path, map_location=device)
-            
-            # Check if it is a full checkpoint dictionary or just model weights
-            if isinstance(checkpoint, dict) and "model_state_dict" in checkpoint:
-                emotion_model.load_state_dict(checkpoint["model_state_dict"])
-                epoch = checkpoint.get("epoch", "N/A")
-                val_acc = checkpoint.get("val_acc", 0)
-                print(
+
+    # Check if it is a full checkpoint dictionary or just model weights
+    if isinstance(checkpoint, dict) and "model_state_dict" in checkpoint:
+        emotion_model.load_state_dict(checkpoint["model_state_dict"])
+        epoch = checkpoint.get("epoch", "N/A")
+        val_acc = checkpoint.get("val_acc", 0)
+        print(
                     f"✓ Emotion model weights loaded successfully from {model_path} "
-                    f"(epoch {epoch}, validation accuracy: {val_acc:.2%})"
-                )
-            else:
-                emotion_model.load_state_dict(checkpoint)
+            f"(epoch {epoch}, validation accuracy: {val_acc:.2%})"
+        )
+    else:
+        emotion_model.load_state_dict(checkpoint)
                 print(f"✓ Emotion model weights loaded successfully from {model_path}")
             
             model_loaded = True
@@ -316,7 +316,7 @@ async def full_pipeline(
         # Step 1: Get text input
         if file:
             # 🚨 語音轉文字功能暫時停用
-            raise HTTPException(
+                raise HTTPException(
                 status_code=503, 
                 detail="語音轉文字功能暫時停用。為了優化部署，此功能已暫時關閉。請直接使用文字輸入。"
             )

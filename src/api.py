@@ -60,31 +60,33 @@ try:
     # Try Docker path first, then local path
     vocab_paths = [
         "/app/models/vocab.pkl",  # Docker path
-        "../models/vocab.pkl",     # Local path from src/
-        "models/vocab.pkl",        # Local path from root
+        "../models/vocab.pkl",  # Local path from src/
+        "models/vocab.pkl",  # Local path from root
     ]
-    
+
     vocab_loaded = False
     for vocab_path in vocab_paths:
         if os.path.exists(vocab_path):
             with open(vocab_path, "rb") as f:
                 vocab_obj = VocabularyUnpickler(f).load()
 
-    # Ensure the correct format is retrieved
-    if hasattr(vocab_obj, "word2idx"):
-        vocab = vocab_obj.word2idx
-    elif isinstance(vocab_obj, dict):
-        vocab = vocab_obj
-    else:
-        raise TypeError(f"Unexpected vocabulary type: {type(vocab_obj)}")
+            # Ensure the correct format is retrieved
+            if hasattr(vocab_obj, "word2idx"):
+                vocab = vocab_obj.word2idx
+            elif isinstance(vocab_obj, dict):
+                vocab = vocab_obj
+            else:
+                raise TypeError(f"Unexpected vocabulary type: {type(vocab_obj)}")
 
-            print(f"✓ Vocabulary loaded successfully from {vocab_path}, size: {len(vocab)}")
+            print(
+                f"✓ Vocabulary loaded successfully from {vocab_path}, size: {len(vocab)}"
+            )
             vocab_loaded = True
             break
-    
+
     if not vocab_loaded:
         raise FileNotFoundError(f"vocab.pkl not found in any of: {vocab_paths}")
-        
+
 except Exception as e:
     print(f"✗ Failed to load vocabulary: {e}")
     import traceback
@@ -111,34 +113,34 @@ try:
     # Try Docker path first, then local path
     model_paths = [
         "/app/models/best_model.pth",  # Docker path
-        "../models/best_model.pth",     # Local path from src/
-        "models/best_model.pth",        # Local path from root
+        "../models/best_model.pth",  # Local path from src/
+        "models/best_model.pth",  # Local path from root
     ]
-    
+
     model_loaded = False
     for model_path in model_paths:
         if os.path.exists(model_path):
             checkpoint = torch.load(model_path, map_location=device)
 
-    # Check if it is a full checkpoint dictionary or just model weights
-    if isinstance(checkpoint, dict) and "model_state_dict" in checkpoint:
-        emotion_model.load_state_dict(checkpoint["model_state_dict"])
-        epoch = checkpoint.get("epoch", "N/A")
-        val_acc = checkpoint.get("val_acc", 0)
-        print(
+            # Check if it is a full checkpoint dictionary or just model weights
+            if isinstance(checkpoint, dict) and "model_state_dict" in checkpoint:
+                emotion_model.load_state_dict(checkpoint["model_state_dict"])
+                epoch = checkpoint.get("epoch", "N/A")
+                val_acc = checkpoint.get("val_acc", 0)
+                print(
                     f"✓ Emotion model weights loaded successfully from {model_path} "
-            f"(epoch {epoch}, validation accuracy: {val_acc:.2%})"
-        )
-    else:
-        emotion_model.load_state_dict(checkpoint)
+                    f"(epoch {epoch}, validation accuracy: {val_acc:.2%})"
+                )
+            else:
+                emotion_model.load_state_dict(checkpoint)
                 print(f"✓ Emotion model weights loaded successfully from {model_path}")
-            
+
             model_loaded = True
             break
-    
+
     if not model_loaded:
         raise FileNotFoundError(f"best_model.pth not found in any of: {model_paths}")
-        
+
 except Exception as e:
     print(f"✗ Failed to load model weights: {e}")
     raise
@@ -225,9 +227,9 @@ async def transcribe_audio(file: UploadFile = File(...)):
     """
     return {
         "error": "語音轉文字功能暫時停用",
-        "message": "為了優化部署，此功能已暫時關閉。如需使用，請聯繫管理員。"
+        "message": "為了優化部署，此功能已暫時關閉。如需使用，請聯繫管理員。",
     }
-    
+
     # 原始代碼（已註釋）
     # try:
     #     # Save temporary file
@@ -316,31 +318,31 @@ async def full_pipeline(
         # Step 1: Get text input
         if file:
             # 🚨 語音轉文字功能暫時停用
-                raise HTTPException(
-                status_code=503, 
-                detail="語音轉文字功能暫時停用。為了優化部署，此功能已暫時關閉。請直接使用文字輸入。"
+            raise HTTPException(
+                status_code=503,
+                detail="語音轉文字功能暫時停用。為了優化部署，此功能已暫時關閉。請直接使用文字輸入。",
             )
-            
-            # 原始代碼（已註釋）
-            # # Transcribe from audio file
-            # with tempfile.NamedTemporaryFile(
-            #     delete=False, suffix=os.path.splitext(file.filename)[1]
-            # ) as tmp:
-            #     content = await file.read()
-            #     tmp.write(content)
-            #     tmp_path = tmp.name
-            #
-            # transcription_result = whisper_service.transcribe(tmp_path)
-            # os.unlink(tmp_path)
-            #
-            # if "error" in transcription_result:
-            #     raise HTTPException(
-            #         status_code=500, detail=transcription_result["error"]
-            #     )
-            #
-            # input_text = transcription_result["text"]
-            transcription = input_text
-        elif text:
+
+        # 原始代碼（已註釋）
+        # # Transcribe from audio file
+        # with tempfile.NamedTemporaryFile(
+        #     delete=False, suffix=os.path.splitext(file.filename)[1]
+        # ) as tmp:
+        #     content = await file.read()
+        #     tmp.write(content)
+        #     tmp_path = tmp.name
+        #
+        # transcription_result = whisper_service.transcribe(tmp_path)
+        # os.unlink(tmp_path)
+        #
+        # if "error" in transcription_result:
+        #     raise HTTPException(
+        #         status_code=500, detail=transcription_result["error"]
+        #     )
+        #
+        # input_text = transcription_result["text"]
+
+        if text:
             input_text = text
             transcription = None
         else:

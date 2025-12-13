@@ -1,0 +1,57 @@
+# ============================================
+# AI Customer Service Backend - Requirements
+# 客戶服務 AI 後端 - 套件需求（Zeabur 部署用）
+# ============================================
+
+# Core Deep Learning Framework
+# 核心深度學習框架
+torch>=2.0.0
+
+# NLP and Transformers
+# 自然語言處理和 Transformer 模型
+transformers>=4.30.0
+sentence-transformers>=2.2.0
+jieba>=0.42.1
+
+# OpenAI API
+openai>=1.0.0
+
+# Web Framework (Backend)
+# 後端網頁框架
+fastapi>=0.100.0
+uvicorn[standard]>=0.23.0
+python-multipart>=0.0.6
+
+# Data Processing
+# 資料處理
+pandas>=2.0.0
+numpy>=1.26.0,<2.0.0
+scikit-learn>=1.3.0
+
+# Vector Database
+# 向量資料庫
+faiss-cpu>=1.7.4
+
+# Utilities
+# 工具套件
+python-dotenv>=1.0.0
+requests>=2.31.0
+tqdm>=4.65.0
+pydantic>=2.0.0
+
+# ============================================
+# 說明
+# ============================================
+# 這是精簡版的 requirements，專門用於 Zeabur 後端部署
+# 移除了不必要的套件以減少構建時間和映像大小
+# 
+# 已移除：
+# - openai-whisper（語音轉文字功能暫時停用，可大幅減少映像大小）
+# - torchvision（不需要圖像處理）
+# - torchaudio（不需要音訊處理）
+# - matplotlib（後端不需要繪圖）
+# - streamlit（前端套件，後端不需要）
+# 
+# 預計映像大小：約 2-3 GB（相比原本的 5-8 GB）
+# ============================================
+

@@ -1,7 +1,7 @@
 {
-  "build_command": "pip install -r requirements.txt",
+  "build_command": "pip install -r requirements_backend.txt",
   "start_command": "cd src && python -m uvicorn api:app --host 0.0.0.0 --port ${PORT:-8000}",
-  "install_cmd": "pip install -r requirements.txt",
+  "install_cmd": "pip install -r requirements_backend.txt",
   "app_type": "python"
 }
 

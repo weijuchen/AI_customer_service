@@ -187,6 +187,7 @@ with st.sidebar:
     try:
         response = requests.get(f"{API_URL}/", timeout=3)
         if response.status_code == 200:
+            
             st.success("✅ API 服務運行中")
         else:
             st.error("❌ API 服務異常")

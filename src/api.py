@@ -19,7 +19,8 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 
 # Import custom modules
-from whisper_service import WhisperService
+# 🚨 暫時註釋 Whisper 以減少部署大小
+# from whisper_service import WhisperService
 from intent_classification import IntentClassifier
 from faq_rag import RAGSystem
 from model import TextCNN
@@ -31,7 +32,9 @@ from data_processing import Vocabulary, text_to_indices
 print("Initializing AI modules...")
 
 # 1. Speech-to-Text Service
-whisper_service = WhisperService()
+# 🚨 暫時註釋 Whisper 以減少部署大小
+# whisper_service = WhisperService()
+whisper_service = None  # 暫時設為 None
 
 # 2. Emotion Classification Model
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -218,29 +221,36 @@ def root():
 async def transcribe_audio(file: UploadFile = File(...)):
     """
     Endpoint 1: Speech-to-Text
+    🚨 暫時停用：為了減少部署大小，Whisper 功能已暫時關閉
     """
-    try:
-        # Save temporary file
-        with tempfile.NamedTemporaryFile(
-            delete=False, suffix=os.path.splitext(file.filename)[1]
-        ) as tmp:
-            content = await file.read()
-            tmp.write(content)
-            tmp_path = tmp.name
-
-        # Transcribe
-        result = whisper_service.transcribe(tmp_path)
-
-        # Delete temporary file
-        os.unlink(tmp_path)
-
-        if "error" in result:
-            raise HTTPException(status_code=500, detail=result["error"])
-
-        return result
-
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    return {
+        "error": "語音轉文字功能暫時停用",
+        "message": "為了優化部署，此功能已暫時關閉。如需使用，請聯繫管理員。"
+    }
+    
+    # 原始代碼（已註釋）
+    # try:
+    #     # Save temporary file
+    #     with tempfile.NamedTemporaryFile(
+    #         delete=False, suffix=os.path.splitext(file.filename)[1]
+    #     ) as tmp:
+    #         content = await file.read()
+    #         tmp.write(content)
+    #         tmp_path = tmp.name
+    #
+    #     # Transcribe
+    #     result = whisper_service.transcribe(tmp_path)
+    #
+    #     # Delete temporary file
+    #     os.unlink(tmp_path)
+    #
+    #     if "error" in result:
+    #         raise HTTPException(status_code=500, detail=result["error"])
+    #
+    #     return result
+    #
+    # except Exception as e:
+    #     raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.post("/analyze")
@@ -305,23 +315,30 @@ async def full_pipeline(
     try:
         # Step 1: Get text input
         if file:
-            # Transcribe from audio file
-            with tempfile.NamedTemporaryFile(
-                delete=False, suffix=os.path.splitext(file.filename)[1]
-            ) as tmp:
-                content = await file.read()
-                tmp.write(content)
-                tmp_path = tmp.name
-
-            transcription_result = whisper_service.transcribe(tmp_path)
-            os.unlink(tmp_path)
-
-            if "error" in transcription_result:
-                raise HTTPException(
-                    status_code=500, detail=transcription_result["error"]
-                )
-
-            input_text = transcription_result["text"]
+            # 🚨 語音轉文字功能暫時停用
+            raise HTTPException(
+                status_code=503, 
+                detail="語音轉文字功能暫時停用。為了優化部署，此功能已暫時關閉。請直接使用文字輸入。"
+            )
+            
+            # 原始代碼（已註釋）
+            # # Transcribe from audio file
+            # with tempfile.NamedTemporaryFile(
+            #     delete=False, suffix=os.path.splitext(file.filename)[1]
+            # ) as tmp:
+            #     content = await file.read()
+            #     tmp.write(content)
+            #     tmp_path = tmp.name
+            #
+            # transcription_result = whisper_service.transcribe(tmp_path)
+            # os.unlink(tmp_path)
+            #
+            # if "error" in transcription_result:
+            #     raise HTTPException(
+            #         status_code=500, detail=transcription_result["error"]
+            #     )
+            #
+            # input_text = transcription_result["text"]
             transcription = input_text
         elif text:
             input_text = text

@@ -33,13 +33,13 @@ class RAGSystem:
         # Load FAQs - try multiple paths
         if faq_path is None:
             faq_paths = [
-                "/app/faq_data/faq.json",     # Docker path
-                "../faq_data/faq.json",        # Local path from src/
-                "faq_data/faq.json",           # Local path from root
+                "/app/faq_data/faq.json",  # Docker path
+                "../faq_data/faq.json",  # Local path from src/
+                "faq_data/faq.json",  # Local path from root
             ]
         else:
             faq_paths = [faq_path]
-        
+
         self.faqs = []
         for path in faq_paths:
             try:
@@ -53,7 +53,7 @@ class RAGSystem:
             except json.JSONDecodeError:
                 print(f"Error: Failed to decode JSON from {path}")
                 continue
-        
+
         if not self.faqs:
             print(f"Warning: No FAQ file found in any of: {faq_paths}")
             print("RAG system will work with empty FAQ database.")
@@ -76,7 +76,7 @@ class RAGSystem:
                 "❌ OPENAI_API_KEY is not set. "
                 "Please set it in Railway environment variables."
             )
-        
+
         print(f"✓ OpenAI API Key found (length: {len(api_key)})")
         self.openai_client = OpenAI(api_key=api_key)
 

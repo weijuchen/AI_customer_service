@@ -7,17 +7,17 @@ from openai import OpenAI
 
 # from anthropic import Anthropic
 
-from dotenv import load_dotenv, find_dotenv
+from dotenv import load_dotenv
 import os
 
 # Find the actual path of .env
-dotenv_path = find_dotenv()
-print(f"Loaded .env path: {dotenv_path}")
+# dotenv_path = find_dotenv()
+# print(f"Loaded .env path: {dotenv_path}")
 
 # Load .env variables
-load_dotenv(dotenv_path, override=True)
+# load_dotenv(dotenv_path, override=True)
 
-# load_dotenv()
+load_dotenv()
 
 
 class RAGSystem:
@@ -69,13 +69,16 @@ class RAGSystem:
             self.index = None
             print("No FAQs loaded. Index building skipped.")
 
-        # Initialize LLM client (OpenAI is used here)
-        # Note: Using an explicit key for demonstration, but environment variables are recommended
-        # self.openai_client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
-
-        # Explicit key for testing/demo purposes (replace with a proper key or env var in production)
-
-        self.openai_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+        # Initialize LLM client (OpenAI)
+        api_key = os.getenv("OPENAI_API_KEY")
+        if not api_key:
+            raise RuntimeError(
+                "❌ OPENAI_API_KEY is not set. "
+                "Please set it in Railway environment variables."
+            )
+        
+        print(f"✓ OpenAI API Key found (length: {len(api_key)})")
+        self.openai_client = OpenAI(api_key=api_key)
 
         # self.anthropic_client = (
         #     Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))

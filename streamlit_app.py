@@ -16,7 +16,8 @@ st.set_page_config(
 )
 
 # API URL from environment variable, defaults to localhost
-API_URL = os.getenv("API_URL", "http://localhost:8000")
+# API_URL = os.getenv("API_URL", "http://localhost:8000")
+API_URL = st.secrets.get("API_URL", "http://localhost:8000")
 
 # Custom CSS styles
 st.markdown(

@@ -46,7 +46,7 @@ if not st.session_state.authenticated:
 # ==================== 已認證，顯示功能 ====================
 
 # API URL
-API_URL = os.getenv("API_URL", "http://localhost:8000")
+API_URL = st.secrets.get("API_URL", "http://localhost:8000")
 
 st.markdown("## 📈 系統監控儀表板")
 st.markdown("即時監控系統狀態與服務健康度")
